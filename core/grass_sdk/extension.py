@@ -1,10 +1,7 @@
 import json
 import time
-
 from aiohttp import WSMsgType
-
 import uuid
-
 from core.utils.exception import WebsocketClosedException, ProxyForbiddenException
 
 
@@ -18,11 +15,10 @@ class GrassWs:
         self.id = None
 
     async def connect(self):
-        uri = "wss://proxy2.wynd.network:4444/"
+        uri = "wss://proxy2.wynd.network:4650/"
 
         headers = {
             'Pragma': 'no-cache',
-            'Origin': 'chrome-extension://lkbnfiajjmbhnfledhphioinpickokdi',
             'Accept-Language': 'en-US,en;q=0.9,uk;q=0.8,ru-RU;q=0.7,ru;q=0.6,en-GB;q=0.5,pl;q=0.4',
             'Sec-WebSocket-Key': '9pviVQ2LanOjNPxF+2xA4Q==',
             'User-Agent': self.user_agent,
@@ -41,12 +37,10 @@ class GrassWs:
             raise e
 
     async def send_message(self, message):
-        # logger.info(f"Sending: {message}")
         await self.websocket.send_str(message)
 
     async def receive_message(self):
         msg = await self.websocket.receive()
-        # logger.info(f"Received: {msg}")
 
         if msg.type == WSMsgType.CLOSED:
             raise WebsocketClosedException(f"Websocket closed: {msg}")
@@ -57,7 +51,7 @@ class GrassWs:
         msg = await self.receive_message()
         return json.loads(msg)['id']
 
-    async def auth_to_extension(self, browser_id: str, user_id: str):
+    async def auth_to_desktop(self, browser_id: str, user_id: str):
         connection_id = await self.get_connection_id()
 
         message = json.dumps(
@@ -69,9 +63,8 @@ class GrassWs:
                     "user_id": user_id,
                     "user_agent": self.user_agent,
                     "timestamp": int(time.time()),
-                    "device_type": "extension",
-                    "version": "4.26.2",
-                    "extension_id": "lkbnfiajjmbhnfledhphioinpickokdi"
+                    "device_type": "desktop",
+                    "version": "4.28.2"
                 }
             }
         )
